@@ -5,3 +5,5 @@
 *.shp
 *.shx
 *.kml
+.Rproj.user
+.Rhistory

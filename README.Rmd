@@ -1,0 +1,19 @@
+---
+title: "Traffic incidents in the City of São Paulo"
+output: html_notebook
+author: Wagner Pinheiro
+date: January, 2017
+---
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# load libraries
+# install.packages("leaflet")
+suppressPackageStartupMessages(library(leaflet))
+suppressPackageStartupMessages(library(stringr))
+data2015 <- read.csv("./dados/2015/ocorrencias-transito-pmsp-2015.csv")
+data2015$lng <- as.numeric(str_match(data2015$WKT, ".*\\((.*)\\s(.*)\\)")[,2])
+data2015$lat <- as.numeric(str_match(data2015$WKT, ".*\\((.*)\\s(.*)\\)")[,3])
+data2015 %>% leaflet() %>% addTiles() %>% addMarkers()
+```
+
