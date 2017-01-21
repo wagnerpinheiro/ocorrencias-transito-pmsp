@@ -1,9 +1,17 @@
 ---
-title: "Traffic incidents in the City of São Paulo"
-output: html_notebook
-author: Wagner Pinheiro
-date: January, 2017
+title: "Traffic Accidents in the Metropolitan Region of São Paulo - 2015"
+author: "Wagner Pinheiro"
+date: "January, 2017"
+output:
+  html_document: default
+  html_notebook:
+    fig_width: 16
 ---
+
+
+Interactive map of traffic accidents in the metropolitan region of São Paulo, clustered by region and type, during the year 2015.
+
+Thanks to the project [Código Urbano](https://github.com/codigourbano) for making public access to this data.
 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
@@ -14,6 +22,87 @@ suppressPackageStartupMessages(library(stringr))
 data2015 <- read.csv("./dados/2015/ocorrencias-transito-pmsp-2015.csv")
 data2015$lng <- as.numeric(str_match(data2015$WKT, ".*\\((.*)\\s(.*)\\)")[,2])
 data2015$lat <- as.numeric(str_match(data2015$WKT, ".*\\((.*)\\s(.*)\\)")[,3])
-data2015 %>% leaflet() %>% addTiles() %>% addMarkers()
+data2015 <- data2015[complete.cases(data2015[,c("lat","lng")]),]
+# @todo agrupar por PRINC_A
+# add legenda com o TIPO_ACIDE
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CO"] <- "Colisão"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CF"] <- "Colisão frontal"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CT"] <- "Colisão traseira"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CL"] <- "Colisão lateral"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CV"] <- "Colisão Transversa"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CP"] <- "Capotamento"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="TB"] <- "Tombamento"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="AT"] <- "Atropelamento"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="AA"] <- "Atropelamento animal"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CH"] <- "Choque"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QM"] <- "Queda moto/bicicleta"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QV"] <- "Queda veículo"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QD"] <- "Queda ocupante dentro"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QF"] <- "Queda ocupante fora"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="OU"] <- "Outros"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="SI"] <- "Sem informação"
+
+factpal <- colorFactor(topo.colors(17), data2015$TIPO_ACIDE, alpha = FALSE, ordered = TRUE)
+
+data2015 %>% leaflet(width=640, height=480, padding=5) %>% addTiles() %>% 
+  addCircleMarkers(data = data2015[data2015$COD_ACID==2,], popup=~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), group="accident", color="blue") %>%  
+  addCircleMarkers(data = data2015[data2015$COD_ACID==4,], popup=~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), group="run over", color="red") %>%
+  addLayersControl(
+     overlayGroups = c("accident", "run over"),
+     options = layersControlOptions(collapsed = FALSE)
+  )
+
+#addCircleMarkers(popup = ~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), color = ~factpal(TIPO_ACIDE), group = ~COD_ACID) %>%
+#addLayersControl(
+  #    overlayGroups = c(2, 4),
+  #    options = layersControlOptions(collapsed = FALSE)
+  # )
+
+# addCircleMarkers(popup = ~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), color = ~factpal(TIPO_ACIDE)) 
+
+# %>% addLegend(pal = factpal, values = ~TIPO_ACIDE_DESCR, opacity = 1, title = "Traffic Incidents - 2015")
+
+
 ```
 
+
+## Appendix I - Source Code
+
+Made with [R](https://www.rstudio.com/) and [Leaflet](https://rstudio.github.io/leaflet/), source code:
+
+```{r, eval=FALSE}
+# load libraries
+# install.packages("leaflet")
+suppressPackageStartupMessages(library(leaflet))
+suppressPackageStartupMessages(library(stringr))
+data2015 <- read.csv("./dados/2015/ocorrencias-transito-pmsp-2015.csv")
+data2015$lng <- as.numeric(str_match(data2015$WKT, ".*\\((.*)\\s(.*)\\)")[,2])
+data2015$lat <- as.numeric(str_match(data2015$WKT, ".*\\((.*)\\s(.*)\\)")[,3])
+data2015 <- data2015[complete.cases(data2015[,c("lat","lng")]),]
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CO"] <- "Colisão"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CF"] <- "Colisão frontal"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CT"] <- "Colisão traseira"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CL"] <- "Colisão lateral"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CV"] <- "Colisão Transversa"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CP"] <- "Capotamento"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="TB"] <- "Tombamento"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="AT"] <- "Atropelamento"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="AA"] <- "Atropelamento animal"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CH"] <- "Choque"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QM"] <- "Queda moto/bicicleta"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QV"] <- "Queda veículo"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QD"] <- "Queda ocupante dentro"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QF"] <- "Queda ocupante fora"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="OU"] <- "Outros"
+data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="SI"] <- "Sem informação"
+
+factpal <- colorFactor(topo.colors(17), data2015$TIPO_ACIDE, alpha = FALSE, ordered = TRUE)
+
+data2015 %>% leaflet() %>% addTiles() %>% 
+  addCircleMarkers(data = data2015[data2015$COD_ACID==2,], popup=~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), group="accident", color="blue") %>%  
+  addCircleMarkers(data = data2015[data2015$COD_ACID==4,], popup=~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), group="run over", color="red") %>%
+  addLayersControl(
+     overlayGroups = c("accident", "run over"),
+     options = layersControlOptions(collapsed = FALSE)
+  )
+```
