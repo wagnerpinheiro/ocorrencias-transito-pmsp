@@ -103,6 +103,7 @@ data2015 %>% leaflet() %>% addTiles() %>%
   addCircleMarkers(data = data2015[data2015$COD_ACID==4,], popup=~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), group="run over", color="red") %>%
   addLayersControl(
      overlayGroups = c("accident", "run over"),
-     options = layersControlOptions(collapsed = FALSE)
+     options = layersControlOptions(collapsed = FALSE),
+     position="topleft"
   )
 ```
