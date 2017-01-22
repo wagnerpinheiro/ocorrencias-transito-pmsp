@@ -3,9 +3,11 @@ title: "Traffic Accidents in the Metropolitan Region of São Paulo - 2015"
 author: "Wagner Pinheiro"
 date: "January, 2017"
 output:
-  html_document: default
+  html_document:
+    theme: united
   html_notebook:
     fig_width: 16
+    theme: united
 ---
 
 
@@ -44,12 +46,13 @@ data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="SI"] <- "Sem informação"
 
 factpal <- colorFactor(topo.colors(17), data2015$TIPO_ACIDE, alpha = FALSE, ordered = TRUE)
 
-data2015 %>% leaflet(width=1024, height=768, padding=5) %>% addTiles() %>% 
+data2015 %>% leaflet(width=800, height=500, padding=5) %>% addTiles() %>% 
   addCircleMarkers(data = data2015[data2015$COD_ACID==2,], popup=~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), group="accident", color="blue") %>%  
   addCircleMarkers(data = data2015[data2015$COD_ACID==4,], popup=~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), group="run over", color="red") %>%
   addLayersControl(
      overlayGroups = c("accident", "run over"),
-     options = layersControlOptions(collapsed = FALSE)
+     options = layersControlOptions(collapsed = FALSE),
+     position="topleft"
   )
 
 #addCircleMarkers(popup = ~TIPO_ACIDE_DESCR, clusterOptions = markerClusterOptions(), color = ~factpal(TIPO_ACIDE), group = ~COD_ACID) %>%
@@ -64,6 +67,9 @@ data2015 %>% leaflet(width=1024, height=768, padding=5) %>% addTiles() %>%
 
 
 ```
+
+
+----
 
 
 ## Appendix I - Source Code
