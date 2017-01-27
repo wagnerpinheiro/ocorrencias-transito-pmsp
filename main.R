@@ -5,46 +5,61 @@ suppressPackageStartupMessages(library(leaflet))
 suppressPackageStartupMessages(library(stringr))
 suppressPackageStartupMessages(library(dplyr))
 
-plotTrafficAccidents <- function(){
-  #load and clean
-  data2015 <- read.csv("./dados/2015/ocorrencias-transito-pmsp-2015.csv")
-  data2015$lng <- as.numeric(str_match(data2015$WKT, ".*\\((.*)\\s(.*)\\)")[,2])
-  data2015$lat <- as.numeric(str_match(data2015$WKT, ".*\\((.*)\\s(.*)\\)")[,3])
-  data2015 <- data2015[complete.cases(data2015[,c("lat","lng")]),]
+
+
+#' load dataset for the year
+#' @param int year of dataset, default 2015
+#' @return datadrame
+#'
+TrafficAccidents.loadDataset <- function(year = 2015){
+  dataset <- read.csv("./dados/2015/ocorrencias-transito-pmsp-2015.csv")
+  dataset$lng <- as.numeric(str_match(dataset$WKT, ".*\\((.*)\\s(.*)\\)")[,2])
+  dataset$lat <- as.numeric(str_match(dataset$WKT, ".*\\((.*)\\s(.*)\\)")[,3])
   
   # add legenda com o TIPO_ACIDE
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CO"] <- "Collision / Colisão"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CF"] <- "Frontal collision / Colisão frontal"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CT"] <- "Rear collision / Colisão traseira"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CL"] <- "Side collision / Colisão lateral"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CV"] <- "Transverse Collision / Colisão Transversa"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CP"] <- "Rollover / Capotamento"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="TB"] <- "Overturning / Tombamento"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="AT"] <- "Run over by vehicle / Atropelamento"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="AA"] <- "Atropelamento animal"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="CH"] <- "Shock / Choque"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QM"] <- "Fall bike|bicycle / Queda moto|bicicleta"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QV"] <- "Vehicle fall / Queda veículo"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QD"] <- "Falling - Occupant inside / Queda ocupante dentro"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="QF"] <- "Falling - Occupant outside / Queda ocupante fora"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="OU"] <- "Other / Outros"
-  data2015$TIPO_ACIDE_DESCR[data2015$TIPO_ACIDE=="SI"] <- "No Information / Sem informação"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="CO"] <- "Collision / Colisão"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="CF"] <- "Frontal collision / Colisão frontal"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="CT"] <- "Rear collision / Colisão traseira"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="CL"] <- "Side collision / Colisão lateral"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="CV"] <- "Transverse Collision / Colisão Transversa"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="CP"] <- "Rollover / Capotamento"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="TB"] <- "Overturning / Tombamento"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="AT"] <- "Run over by vehicle / Atropelamento"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="AA"] <- "Atropelamento animal"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="CH"] <- "Shock / Choque"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="QM"] <- "Fall bike|bicycle / Queda moto|bicicleta"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="QV"] <- "Vehicle fall / Queda veículo"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="QD"] <- "Falling - Occupant inside / Queda ocupante dentro"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="QF"] <- "Falling - Occupant outside / Queda ocupante fora"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="OU"] <- "Other / Outros"
+  dataset$TIPO_ACIDE_DESCR[dataset$TIPO_ACIDE=="SI"] <- "No Information / Sem informação"
   
   # normaliza numero de vitimas
-  data2015$VITIMAS_NORM[data2015$VITIMAS < 100] <- data2015[data2015$VITIMAS < 100,17]
-  data2015$VITIMAS_NORM[data2015$VITIMAS >= 100] <- data2015[data2015$VITIMAS >= 100,17] %/% 100
-  data2015$VITIMAS_MORTE <- 0
-  data2015$VITIMAS_MORTE[data2015$VITIMAS >= 100] <- data2015[data2015$VITIMAS >= 100,17] %% 100
+  dataset$VITIMAS_NORM[dataset$VITIMAS < 100] <- dataset[dataset$VITIMAS < 100,17]
+  dataset$VITIMAS_NORM[dataset$VITIMAS >= 100] <- dataset[dataset$VITIMAS >= 100,17] %/% 100
+  dataset$VITIMAS_MORTE <- 0
+  dataset$VITIMAS_MORTE[dataset$VITIMAS >= 100] <- dataset[dataset$VITIMAS >= 100,17] %% 100
+  
+  dataset
+}
+
+#' plot a leaflet plot with data
+#' @param dataset the data frame with data 
+#' @return leaflet plot
+#'
+TrafficAccidents.plotTrafficAccidents <- function(dataset){
+  # clear NA for leaflet
+  dataset <- dataset[complete.cases(dataset[,c("lat","lng")]),]
   
   # popup
-  data2015$popup <- paste(data2015$TIPO_ACIDE_DESCR, "<br><br>victims:", data2015$VITIMAS_NORM, "<br>deaths:", data2015$VITIMAS_MORTE, "<br>date: ", data2015$DATA, "<br>location code: ", data2015$CADLOGA);
+  dataset$popup <- paste(dataset$TIPO_ACIDE_DESCR, "<br><br>victims:", dataset$VITIMAS_NORM, "<br>deaths:", dataset$VITIMAS_MORTE, "<br>date: ", dataset$DATA, "<br>location code: ", dataset$CADLOGA);
   
   # color
-  data2015$color[data2015$COD_ACID==2] <- "blue"
-  data2015$color[data2015$COD_ACID==4] <- "red" 
+  dataset$color[dataset$COD_ACID==2] <- "blue"
+  dataset$color[dataset$COD_ACID==4] <- "red" 
   
   # top 10 locations
-  locations <- data2015 %>%
+  locations <- dataset %>%
     group_by(WKT) %>%
     summarize(n=n(), vitimas=sum(VITIMAS_NORM), vitimas_morte=sum(VITIMAS_MORTE))
   
@@ -66,7 +81,7 @@ plotTrafficAccidents <- function(){
   deadly$popup <- paste("<b>Deadly Location</b><br><br>total accidents: ", deadly$n, "<br>victims: ", deadly$vitimas, "<br>deaths: ", deadly$vitimas_morte)
   
   # most run over
-  run_over <- data2015[data2015$COD_ACID==4,] %>%
+  run_over <- dataset[dataset$COD_ACID==4,] %>%
     group_by(WKT) %>%
     summarize(n=n(), vitimas=sum(VITIMAS_NORM), vitimas_morte=sum(VITIMAS_MORTE))
   
@@ -85,15 +100,15 @@ plotTrafficAccidents <- function(){
     group_by(codlog5) %>%
     summarize(n=n())
   
-  run_over_rapido <- data2015 %>%
+  run_over_rapido <- dataset %>%
     filter(COD_ACID==4, CADLOGA %in% logradouros$codlog5)
   
-  # factpal <- colorFactor(topo.colors(17), data2015$TIPO_ACIDE, alpha = FALSE, ordered = TRUE)
+  # factpal <- colorFactor(topo.colors(17), dataset$TIPO_ACIDE, alpha = FALSE, ordered = TRUE)
   
-  traffic_accidents_plot <- data2015 %>% leaflet(width=800, height=500, padding=5) %>% addTiles() %>% 
-    addCircleMarkers(data = data2015, popup=~popup, clusterOptions = markerClusterOptions(), group="all accidents", color=~color, radius = ~VITIMAS_NORM * 4, weight = 3,  fillOpacity = ~VITIMAS_MORTE + 0.2 ) %>%
+  traffic_accidents_plot <- dataset %>% leaflet(width=800, height=500, padding=5) %>% addTiles() %>% 
+    addCircleMarkers(data = dataset, popup=~popup, clusterOptions = markerClusterOptions(), group="all accidents", color=~color, radius = ~VITIMAS_NORM * 4, weight = 3,  fillOpacity = ~VITIMAS_MORTE + 0.2 ) %>%
     addCircleMarkers(data = run_over_rapido, popup=~popup, group="atropelamentos nas vias expressas", color=~color, radius = 8, weight = 3,  fillOpacity = ~VITIMAS_MORTE + 0.2 ) %>%
-    addCircleMarkers(data = data2015[data2015$COD_ACID==4,], popup=~popup, clusterOptions = markerClusterOptions(), group="run over by vehicle", color=~color, radius = ~VITIMAS_NORM * 4, weight = 3, fillOpacity = ~VITIMAS_MORTE + 0.2 ) %>%
+    addCircleMarkers(data = dataset[dataset$COD_ACID==4,], popup=~popup, clusterOptions = markerClusterOptions(), group="run over by vehicle", color=~color, radius = ~VITIMAS_NORM * 4, weight = 3, fillOpacity = ~VITIMAS_MORTE + 0.2 ) %>%
     addMarkers(data=top10, group="worst location", popup=~popup)%>%
     addMarkers(data=deadly, group="deadly", popup=~popup)%>%
     addMarkers(data=run_over, group="run over by vehicle", popup=~popup)%>%
@@ -119,3 +134,5 @@ plotTrafficAccidents <- function(){
   
   # %>% addLegend(pal = factpal, values = ~TIPO_ACIDE_DESCR, opacity = 1, title = "Traffic Incidents - 2015")
 }  
+
+plotTrafficAccidents <- TrafficAccidents.plotTrafficAccidents

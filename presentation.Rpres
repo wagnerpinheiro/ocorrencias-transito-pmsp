@@ -7,12 +7,19 @@ autosize: true
 First Slide
 ========================================================
 
-```{r}
+```{r, echo=FALSE}
+# load packages
 # install.packages("plotly")
 # info: https://github.com/DataScienceSpecialization/Developing_Data_Products/blob/master/plotly/plotly.Rmd
 suppressPackageStartupMessages(library(plotly))
 
 ```
+
+```{r}
+source("main.R")
+TrafficAccidents.loadDataset()
+```
+
 
 Slide With Plot
 ========================================================
