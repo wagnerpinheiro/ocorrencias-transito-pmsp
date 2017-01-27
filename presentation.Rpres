@@ -1,0 +1,22 @@
+Traffic Accidents in São Paulo - 2015 dataset
+========================================================
+author: Wagner Pinheiro
+date: January, 2017
+autosize: true
+
+First Slide
+========================================================
+
+```{r}
+# install.packages("plotly")
+# info: https://github.com/DataScienceSpecialization/Developing_Data_Products/blob/master/plotly/plotly.Rmd
+suppressPackageStartupMessages(library(plotly))
+
+```
+
+Slide With Plot
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```
