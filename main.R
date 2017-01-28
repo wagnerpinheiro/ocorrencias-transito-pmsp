@@ -13,6 +13,10 @@ suppressPackageStartupMessages(library(dplyr))
 #'
 TrafficAccidents.loadDataset <- function(year = 2015){
   dataset <- read.csv("./dados/2015/ocorrencias-transito-pmsp-2015.csv")
+  
+  dataset$DATE <- as.Date(dataset$DATA)
+  dataset$TIME_HOUR <- as.integer(str_match(dataset$HORA, "([0-9]?[0-9])([0-9][0-9])")[,2])
+  dataset$TIME_MINUTE <- as.integer(str_match(dataset$HORA, "([0-9]?[0-9])([0-9][0-9])")[,3])
   dataset$lng <- as.numeric(str_match(dataset$WKT, ".*\\((.*)\\s(.*)\\)")[,2])
   dataset$lat <- as.numeric(str_match(dataset$WKT, ".*\\((.*)\\s(.*)\\)")[,3])
   

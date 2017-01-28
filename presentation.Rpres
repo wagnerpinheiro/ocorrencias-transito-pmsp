@@ -4,26 +4,41 @@ author: Wagner Pinheiro
 date: January, 2017
 autosize: true
 
-First Slide
+Collisions vs Run Over - 2015
 ========================================================
 
-```{r, echo=FALSE}
+```{r, echo=F}
 # load packages
-# install.packages("plotly")
+# install.packages(c("tidyr","dplyr","ggplot2","plotly", "webshot"))
 # info: https://github.com/DataScienceSpecialization/Developing_Data_Products/blob/master/plotly/plotly.Rmd
+t <- Sys.setlocale(locale = "en_US.UTF-8")
 suppressPackageStartupMessages(library(plotly))
-
-```
-
-```{r}
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(dplyr))
 source("main.R")
-TrafficAccidents.loadDataset()
+dataset <- TrafficAccidents.loadDataset()
+
+# str(dataset)
+# head(dataset)
+
+dataset <- dataset %>%
+  mutate(month = factor(months.Date(DATE), levels=month.name)) %>%
+  mutate(type = factor(ifelse(COD_ACID==4, "Run over by vehicle","Collisions")))
+
+dataset <- dataset %>% 
+  group_by(month, type) %>%
+  summarise(deaths = sum(VITIMAS_MORTE))
+
+# dataset <- as.data.frame(dataset) %>% 
+#   gather(month)
+
+total <- sum(dataset$deaths)
+
+p <- plot_ly(dataset, x = ~month, y = ~deaths, split=~type, type = "bar") %>%
+  layout(title = paste(total, " Deaths by Month and Type in Traffic - 2015"), yaxis = list(title = 'Deaths'), barmode = 'stack')
+
+chart_link = plotly_POST(p, filename="traffic_accidents_by_type")
+
+chart_link
 ```
 
-
-Slide With Plot
-========================================================
-
-```{r, echo=FALSE}
-plot(cars)
-```
