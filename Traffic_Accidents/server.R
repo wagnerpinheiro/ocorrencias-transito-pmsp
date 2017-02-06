@@ -9,15 +9,13 @@
 
 library(shiny)
 library(leaflet)
-source("../main.R")
+source("main.R")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-   
+  dataset <- TrafficAccidents.loadDataset() 
   output$map_sp <- renderLeaflet({
-    
-    setwd("../")
-    plotTrafficAccidents()
+    plotTrafficAccidents(dataset, input$filter_type_accident)
     
   })
   
